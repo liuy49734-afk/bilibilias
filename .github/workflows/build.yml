@@ -7,12 +7,15 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      # 1. 强制解决 Git 拉取问题
       - name: 拉取代码
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           persist-credentials: false
+          token: ${{ secrets.GITHUB_TOKEN }}
 
+      # 2. 配置 JDK
       - name: 配置JDK
         uses: actions/setup-java@v4
         with:
@@ -20,15 +23,17 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
+      # 3. 给脚本加权限
       - name: 给gradlew加权限
         run: chmod +x gradlew
 
+      # 4. 构建 APK
       - name: 编译Release APK
         run: ./gradlew clean assembleRelease --stacktrace
 
+      # 5. 上传所有 APK
       - name: 上传APK文件
         uses: actions/upload-artifact@v4
         with:
           name: 我的APK文件
-          # 这里用通配符找APK，不管你的模块叫什么，都能找到！
           path: '**/build/outputs/apk/release/*.apk'
